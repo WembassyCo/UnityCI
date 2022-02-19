@@ -1,0 +1,42 @@
+name: Window Release 😎
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Build my project ✨
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ hashFiles('UnityGameServer/Assets/**', 'UnityGameServer/Packages/**', 'UnityGameServer/ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+
+      # Build for Windows
+      - name: Build Windows Project
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: StandaloneWindows64
+          projectPath: UnityGameServer
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          allowDirtyBuild: true
+
+      # Output
+      - uses: actions/upload-artifact@v2
+        with:
+          name: WindowsBuild
+          path: build
